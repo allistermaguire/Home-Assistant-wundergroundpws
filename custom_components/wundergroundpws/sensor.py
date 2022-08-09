@@ -396,7 +396,7 @@ class WUndergroundSensor(Entity):
         self.rest.request_feature(SENSOR_TYPES[condition].feature)
         # This is only the suggested entity id, it might get changed by
         # the entity registry later.
-        self.entity_id = sensor.ENTITY_ID_FORMAT.format('wupws_' + condition)
+        self.entity_id = sensor.ENTITY_ID_FORMAT.format(f"wupws_{unique_id_base.lower()}_{condition}")
         self._unique_id = "{},{}".format(unique_id_base, condition)
         self._device_class = self._cfg_expand("device_class")
 
