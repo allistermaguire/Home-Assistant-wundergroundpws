@@ -192,13 +192,7 @@ group:
 ### {% linkable_title Weather overview %}
 
 <p class='note warning'>
-Note: While the platform is called “wundergroundpws” the sensors will show up in Home Assistant as “WUPWS” (eg: sensor.wupws_weather_1d).
+Note: While the platform is called “wundergroundpws” the sensors will show up in Home Assistant as “WUPWS” (eg: sensor.wupws_[name|stationid|coordinates]_weather_1d).
 </p>
-
-Note that the Weather Underground sensor is added to the entity_registry, so second and subsequent Personal Weather Station ID (pws_id) will have their monitored conditions suffixed with an index number e.g.
-
-```yaml
-- sensor.wupws_weather_1d_metric_2
-```
 
 Additional details about the API are available [here](https://docs.google.com/document/d/1eKCnKXI9xnoMGRRzOL1xPCBihNV2rOet08qpE_gArAY/edit).

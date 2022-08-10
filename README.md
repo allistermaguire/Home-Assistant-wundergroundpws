@@ -69,6 +69,10 @@ Description of terms and variables
       description: "You must enter a Personal Weather Station ID. The station id will be used to display current weather conditions."
       required: true
       type: string
+    name:
+      description: "Personalised name for Weather Station or forecast. If not specified will default to Weather Station ID or Coordinates."
+      required: false
+      type: string
     numeric_precision:
         description: Required - Show PWS data as integer or decimal
         required: true - Value of 'none' or 'decimal'
@@ -115,6 +119,8 @@ Description of terms and variables
           description: Heat index (combined effects of the temperature and humidity of the air)
         windChill:
           description: Wind Chill (combined effects of the temperature and wind)      
+        feelsLike:
+          description: Feels Like Temperature (mixture of the Wind Chill Factor and the Heat Index)
         elev:
           description: Elevation
         precipTotal:
@@ -171,12 +177,7 @@ in `_1n_` part of the sensor name. Valid values are from `1` to `5`.
 
 ```
 <p class='note warning'>
-Note: While the platform is called “wundergroundpws” the sensors will show up in Home Assistant as “WUPWS” (eg: sensor.wupws_weather_1d).
+Note: While the platform is called “wundergroundpws” the sensors will show up in Home Assistant as “WUPWS” (eg: sensor.wupws_[name|stationid|coordinates]_weather_1d).
 </p>
 
-Note that the Weather Underground sensor is added to the entity_registry, so second and subsequent Personal Weather Station ID (pws_id) will have their monitored conditions suffixed with an index number e.g.
-
-```yaml
-    - sensor.wupws_weather_1d_metric_2
-```
 Additional details about the API are available [here](https://docs.google.com/document/d/1eKCnKXI9xnoMGRRzOL1xPCBihNV2rOet08qpE_gArAY/edit).
