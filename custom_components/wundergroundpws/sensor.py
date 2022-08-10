@@ -5,42 +5,41 @@ For more details about this platform, please refer to the documentation at
 https://github.com/cytech/Home-Assistant-wundergroundpws
 """
 import asyncio
-from datetime import timedelta
 import logging
 import re
+from datetime import timedelta
 
 import aiohttp
 import async_timeout
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
-from homeassistant.helpers.typing import HomeAssistantType, ConfigType
 from homeassistant.components import sensor
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import (
-    CONF_MONITORED_CONDITIONS,
+    ATTR_ATTRIBUTION,
     CONF_API_KEY,
     CONF_LATITUDE,
     CONF_LONGITUDE,
-    TEMP_FAHRENHEIT,
-    TEMP_CELSIUS,
-    LENGTH_INCHES,
+    CONF_MONITORED_CONDITIONS,
     LENGTH_FEET,
-    LENGTH_MILLIMETERS,
+    LENGTH_INCHES,
     LENGTH_METERS,
-    SPEED_MILES_PER_HOUR,
-    SPEED_KILOMETERS_PER_HOUR,
+    LENGTH_MILLIMETERS,
     PERCENTAGE,
-    PRESSURE_INHG,
-    PRESSURE_MBAR,
     PRECIPITATION_INCHES_PER_HOUR,
     PRECIPITATION_MILLIMETERS_PER_HOUR,
-    ATTR_ATTRIBUTION,
+    PRESSURE_INHG,
+    PRESSURE_MBAR,
+    SPEED_KILOMETERS_PER_HOUR,
+    SPEED_MILES_PER_HOUR,
+    TEMP_CELSIUS,
+    TEMP_FAHRENHEIT,
 )
 from homeassistant.exceptions import PlatformNotReady
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.typing import ConfigType, HomeAssistantType
 from homeassistant.util import Throttle
-import homeassistant.helpers.config_validation as cv
 
 # import homeassistant.config as config
 
