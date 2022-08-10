@@ -230,6 +230,8 @@ SENSOR_TYPES = {
         'Wind Gust', 'windGust', "mdi:weather-windy", SPEEDUNIT),
     'windSpeed': WUCurrentConditionsSensorConfig(
         'Wind Speed', 'windSpeed', "mdi:weather-windy", SPEEDUNIT),
+    'feelsLike': WUCurrentConditionsSensorConfig(
+        'Feels Like', 'feelsLike', "mdi:thermometer", TEMPUNIT),
     # forecast
     'weather_1d': WUDailyTextForecastSensorConfig(0),
     'weather_1n': WUDailyTextForecastSensorConfig(1),
@@ -546,6 +548,15 @@ class WUndergroundData:
 
             if result_current is None:
                 raise ValueError('NO CURRENT RESULT')
+            else:
+                temp = result_current['observations'][0][self.unit_system]['temp']
+                windChill = result_current['observations'][0][self.unit_system]['windChill']
+                heatIndex = result_current['observations'][0][self.unit_system]['heatIndex']
+
+                # Calculate feelsLike temperature and add to results
+                feelsLike = windChill if windChill < temp else heatIndex
+                result_current['observations'][0][self.unit_system]['feelsLike'] = feelsLike
+
             with async_timeout.timeout(10):
                 response = await self._session.get(self._build_url(_RESOURCEFORECAST), headers=headers)
             result_forecast = await response.json()

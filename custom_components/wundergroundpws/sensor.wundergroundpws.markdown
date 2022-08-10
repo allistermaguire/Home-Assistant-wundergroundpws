@@ -105,7 +105,9 @@ monitored_conditions:
     heatIndex:
       description: Heat index (combined effects of the temperature and humidity of the air)
     windChill:
-      description: Wind Chill (combined effects of the temperature and wind)      
+      description: Wind Chill (combined effects of the temperature and wind)
+    feelsLike:
+      description: Feels Like Temperature (mixture of the Wind Chill Factor and the Heat Index)
     elev:
       description: Elevation
     precipTotal:
