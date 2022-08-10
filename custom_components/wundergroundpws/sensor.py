@@ -36,6 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONF_ATTRIBUTION = "Data provided by the WUnderground weather service"
 CONF_PWS_ID = 'pws_id'
+CONF_NAME = 'name'
 CONF_NUMERIC_PRECISION = 'numeric_precision'
 CONF_LANG = 'lang'
 
@@ -51,6 +52,10 @@ PRESSUREUNIT = 4
 RATE = 5
 PERCENTAGEUNIT = 6
 
+FIELD_CONDITION_FEELSLIKE = 'feelsLike'
+FIELD_CONDITION_HEATINDEX = 'heatIndex'
+FIELD_CONDITION_TEMP = 'temp'
+FIELD_CONDITION_WINDCHILL = 'windChill'
 
 # Helper classes for declaring sensor configurations
 
@@ -212,10 +217,10 @@ SENSOR_TYPES = {
         'Elevation', 'elev', 'mdi:elevation-rise', ALTITUDEUNIT),
     'dewpt': WUCurrentConditionsSensorConfig(
         'Dewpoint', 'dewpt', 'mdi:water', TEMPUNIT),
-    'heatIndex': WUCurrentConditionsSensorConfig(
-        'Heat index', 'heatIndex', "mdi:thermometer", TEMPUNIT),
-    'windChill': WUCurrentConditionsSensorConfig(
-        'Wind chill', 'windChill', "mdi:thermometer", TEMPUNIT),
+    FIELD_CONDITION_HEATINDEX: WUCurrentConditionsSensorConfig(
+        'Heat index', FIELD_CONDITION_HEATINDEX, "mdi:thermometer", TEMPUNIT),
+    FIELD_CONDITION_WINDCHILL: WUCurrentConditionsSensorConfig(
+        'Wind chill', FIELD_CONDITION_WINDCHILL, "mdi:thermometer", TEMPUNIT),
     'precipRate': WUCurrentConditionsSensorConfig(
         'Precipitation Rate', 'precipRate', "mdi:umbrella", RATE),
     'precipTotal': WUCurrentConditionsSensorConfig(
@@ -223,15 +228,15 @@ SENSOR_TYPES = {
     'pressure': WUCurrentConditionsSensorConfig(
         'Pressure', 'pressure', "mdi:gauge", PRESSUREUNIT,
         device_class="pressure"),
-    'temp': WUCurrentConditionsSensorConfig(
-        'Temperature', 'temp', "mdi:thermometer", TEMPUNIT,
+    FIELD_CONDITION_TEMP: WUCurrentConditionsSensorConfig(
+        'Temperature', FIELD_CONDITION_TEMP, "mdi:thermometer", TEMPUNIT,
         device_class="temperature"),
     'windGust': WUCurrentConditionsSensorConfig(
         'Wind Gust', 'windGust', "mdi:weather-windy", SPEEDUNIT),
     'windSpeed': WUCurrentConditionsSensorConfig(
         'Wind Speed', 'windSpeed', "mdi:weather-windy", SPEEDUNIT),
-    'feelsLike': WUCurrentConditionsSensorConfig(
-        'Feels Like', 'feelsLike', "mdi:thermometer", TEMPUNIT),
+    FIELD_CONDITION_FEELSLIKE: WUCurrentConditionsSensorConfig(
+        'Feels Like', FIELD_CONDITION_FEELSLIKE, "mdi:thermometer", TEMPUNIT),
     # forecast
     'weather_1d': WUDailyTextForecastSensorConfig(0),
     'weather_1n': WUDailyTextForecastSensorConfig(1),
@@ -350,6 +355,7 @@ async def async_setup_platform(hass: HomeAssistantType, config: ConfigType,
     latitude = config.get(CONF_LATITUDE, hass.config.latitude)
     longitude = config.get(CONF_LONGITUDE, hass.config.longitude)
     pws_id = config.get(CONF_PWS_ID)
+    name_prefix = config.get(CONF_NAME)
     numeric_precision = config.get(CONF_NUMERIC_PRECISION)
 
     if hass.config.units.is_metric:
@@ -368,6 +374,11 @@ async def async_setup_platform(hass: HomeAssistantType, config: ConfigType,
     else:
         # Manually specified weather station, use that for unique_id
         unique_id_base = pws_id
+
+    if name_prefix is not None:
+        # If name specified in config, use it for unique_id
+        unique_id_base = name_prefix
+
     sensors = []
     for variable in config[CONF_MONITORED_CONDITIONS]:
         sensors.append(WUndergroundSensor(hass, rest, variable,
@@ -399,8 +410,10 @@ class WUndergroundSensor(Entity):
         # This is only the suggested entity id, it might get changed by
         # the entity registry later.
         self.entity_id = sensor.ENTITY_ID_FORMAT.format(f"wupws_{unique_id_base.lower()}_{condition}")
-        self._unique_id = "{},{}".format(unique_id_base, condition)
+        self._unique_id = f"{unique_id_base},{condition}"
         self._device_class = self._cfg_expand("device_class")
+        friendly_name = self._cfg_expand("friendly_name")
+        self._name = f"{unique_id_base} {friendly_name}"
 
     def _cfg_expand(self, what, default=None):
         """Parse and return sensor data."""
@@ -436,7 +449,7 @@ class WUndergroundSensor(Entity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return self._cfg_expand("friendly_name")
+        return self._name
 
     @property
     def state(self):
@@ -549,13 +562,13 @@ class WUndergroundData:
             if result_current is None:
                 raise ValueError('NO CURRENT RESULT')
             else:
-                temp = result_current['observations'][0][self.unit_system]['temp']
-                windChill = result_current['observations'][0][self.unit_system]['windChill']
-                heatIndex = result_current['observations'][0][self.unit_system]['heatIndex']
+                temp = result_current['observations'][0][self.unit_system][FIELD_CONDITION_TEMP]
+                windChill = result_current['observations'][0][self.unit_system][FIELD_CONDITION_WINDCHILL]
+                heatIndex = result_current['observations'][0][self.unit_system][FIELD_CONDITION_HEATINDEX]
 
                 # Calculate feelsLike temperature and add to results
                 feelsLike = windChill if windChill < temp else heatIndex
-                result_current['observations'][0][self.unit_system]['feelsLike'] = feelsLike
+                result_current['observations'][0][self.unit_system][FIELD_CONDITION_FEELSLIKE] = feelsLike
 
             with async_timeout.timeout(10):
                 response = await self._session.get(self._build_url(_RESOURCEFORECAST), headers=headers)

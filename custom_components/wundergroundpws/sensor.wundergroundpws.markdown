@@ -64,6 +64,10 @@ pws_id:
   description: "You must enter a Personal Weather Station ID. The station id will be used to display current weather conditions."
   required: true
   type: string
+name:
+  description: "Personalised name for Weather Station or forecast. If not specified will default to Weather Station ID or Coordinates."
+  required: false
+  type: string
 lang:
   description: Specify the language that the API returns. The current list of all Wunderground language codes is available [here](https://docs.google.com/document/d/13HTLgJDpsb39deFzk_YCQ5GoGoZCO_cRYzIxbwvgJLI/edit#). If not specified, it defaults to English (en-US).
   required: false
