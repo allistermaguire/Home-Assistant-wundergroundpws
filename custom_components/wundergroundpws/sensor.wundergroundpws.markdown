@@ -64,6 +64,10 @@ pws_id:
   description: "You must enter a Personal Weather Station ID. The station id will be used to display current weather conditions."
   required: true
   type: string
+name:
+  description: "Personalised name for Weather Station or forecast. If not specified will default to Weather Station ID or Coordinates."
+  required: false
+  type: string
 lang:
   description: Specify the language that the API returns. The current list of all Wunderground language codes is available [here](https://docs.google.com/document/d/13HTLgJDpsb39deFzk_YCQ5GoGoZCO_cRYzIxbwvgJLI/edit#). If not specified, it defaults to English (en-US).
   required: false
@@ -105,7 +109,9 @@ monitored_conditions:
     heatIndex:
       description: Heat index (combined effects of the temperature and humidity of the air)
     windChill:
-      description: Wind Chill (combined effects of the temperature and wind)      
+      description: Wind Chill (combined effects of the temperature and wind)
+    feelsLike:
+      description: Feels Like Temperature (mixture of the Wind Chill Factor and the Heat Index)
     elev:
       description: Elevation
     precipTotal:
@@ -186,13 +192,7 @@ group:
 ### {% linkable_title Weather overview %}
 
 <p class='note warning'>
-Note: While the platform is called “wundergroundpws” the sensors will show up in Home Assistant as “WUPWS” (eg: sensor.wupws_weather_1d).
+Note: While the platform is called “wundergroundpws” the sensors will show up in Home Assistant as “WUPWS” (eg: sensor.wupws_[name|stationid|coordinates]_weather_1d).
 </p>
-
-Note that the Weather Underground sensor is added to the entity_registry, so second and subsequent Personal Weather Station ID (pws_id) will have their monitored conditions suffixed with an index number e.g.
-
-```yaml
-- sensor.wupws_weather_1d_metric_2
-```
 
 Additional details about the API are available [here](https://docs.google.com/document/d/1eKCnKXI9xnoMGRRzOL1xPCBihNV2rOet08qpE_gArAY/edit).
