@@ -52,6 +52,11 @@ PRESSUREUNIT = 4
 RATE = 5
 PERCENTAGEUNIT = 6
 
+FIELD_CONDITION_FEELSLIKE = "feelsLike"
+FIELD_CONDITION_HEATINDEX = "heatIndex"
+FIELD_CONDITION_TEMP = "temp"
+FIELD_CONDITION_WINDCHILL = "windChill"
+
 
 # Helper classes for declaring sensor configurations
 
@@ -213,10 +218,12 @@ SENSOR_TYPES = {
         'Elevation', 'elev', 'mdi:elevation-rise', ALTITUDEUNIT),
     'dewpt': WUCurrentConditionsSensorConfig(
         'Dewpoint', 'dewpt', 'mdi:water', TEMPUNIT),
-    'heatIndex': WUCurrentConditionsSensorConfig(
-        'Heat index', 'heatIndex', "mdi:thermometer", TEMPUNIT),
-    'windChill': WUCurrentConditionsSensorConfig(
-        'Wind chill', 'windChill', "mdi:thermometer", TEMPUNIT),
+    FIELD_CONDITION_HEATINDEX: WUCurrentConditionsSensorConfig(
+        "Heat index", FIELD_CONDITION_HEATINDEX, "mdi:thermometer", TEMPUNIT
+    ),
+    FIELD_CONDITION_WINDCHILL: WUCurrentConditionsSensorConfig(
+        "Wind chill", FIELD_CONDITION_WINDCHILL, "mdi:thermometer", TEMPUNIT
+    ),
     'precipRate': WUCurrentConditionsSensorConfig(
         'Precipitation Rate', 'precipRate', "mdi:umbrella", RATE),
     'precipTotal': WUCurrentConditionsSensorConfig(
@@ -231,6 +238,9 @@ SENSOR_TYPES = {
         'Wind Gust', 'windGust', "mdi:weather-windy", SPEEDUNIT),
     'windSpeed': WUCurrentConditionsSensorConfig(
         'Wind Speed', 'windSpeed', "mdi:weather-windy", SPEEDUNIT),
+    FIELD_CONDITION_FEELSLIKE: WUCurrentConditionsSensorConfig(
+        "Feels Like", FIELD_CONDITION_FEELSLIKE, "mdi:thermometer", TEMPUNIT
+    ),
     # forecast
     'weather_1d': WUDailyTextForecastSensorConfig(0),
     'weather_1n': WUDailyTextForecastSensorConfig(1),
@@ -558,6 +568,24 @@ class WUndergroundData:
 
             if result_current is None:
                 raise ValueError('NO CURRENT RESULT')
+            else:
+                temp = result_current["observations"][0][self.unit_system][
+                    FIELD_CONDITION_TEMP
+                ]
+                windChill = result_current["observations"][0][self.unit_system][
+                    FIELD_CONDITION_WINDCHILL
+                ]
+                heatIndex = result_current["observations"][0][self.unit_system][
+                    FIELD_CONDITION_HEATINDEX
+                ]
+
+                # Calculate feelsLike temperature and add to results based on
+                # https://www.wunderground.com/maps/temperature/feels-like
+                feelsLike = windChill if windChill < temp else heatIndex
+                result_current["observations"][0][self.unit_system][
+                    FIELD_CONDITION_FEELSLIKE
+                ] = feelsLike
+
             with async_timeout.timeout(10):
                 response = await self._session.get(self._build_url(_RESOURCEFORECAST), headers=headers)
             result_forecast = await response.json()
