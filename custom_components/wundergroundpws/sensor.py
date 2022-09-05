@@ -579,9 +579,12 @@ class WUndergroundData:
                     FIELD_CONDITION_HEATINDEX
                 ]
 
-                # Calculate feelsLike temperature and add to results based on
-                # https://www.wunderground.com/maps/temperature/feels-like
-                feelsLike = windChill if windChill < temp else heatIndex
+                feelsLike = temp
+                if (windChill is not None) and (heatIndex is not None):
+                    # Calculate feelsLike temperature and add to results based on
+                    # https://www.wunderground.com/maps/temperature/feels-like
+                    feelsLike = windChill if windChill < temp else heatIndex
+                
                 result_current["observations"][0][self.unit_system][
                     FIELD_CONDITION_FEELSLIKE
                 ] = feelsLike
