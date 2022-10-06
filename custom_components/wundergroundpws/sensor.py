@@ -580,7 +580,7 @@ class WUndergroundData:
                 ]
 
                 feelsLike = temp
-                if (windChill is not None) and (heatIndex is not None):
+                if all(item is not None for item in [temp, windChill, heatIndex]):
                     # Calculate feelsLike temperature and add to results based on
                     # https://www.wunderground.com/maps/temperature/feels-like
                     feelsLike = windChill if windChill < temp else heatIndex
