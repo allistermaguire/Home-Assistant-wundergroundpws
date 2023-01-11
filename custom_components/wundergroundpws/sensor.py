@@ -234,16 +234,6 @@ SENSOR_TYPES = {
     'temp': WUCurrentConditionsSensorConfig(
         'Temperature', 'temp', "mdi:thermometer", TEMPUNIT,
         device_class=SensorDeviceClass.TEMPERATURE, state_class=SensorStateClass.MEASUREMENT),
-    'feelsLike': WUSensorConfig(
-        'Feels Like', 'conditions',
-        value=lambda wu: calculate_feels_like_temp(
-            float(wu.data['observations'][0]['heatIndex'] or 0),
-            float(wu.data['observations'][0]['windChill'] or 0),
-            float(wu.data['observations'][0]['temp'] or 0)),
-        unit_of_measurement=TEMPUNIT,
-        icon="mdi:thermometer",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT),
     'windGust': WUCurrentConditionsSensorConfig(
         'Wind Gust', 'windGust', "mdi:weather-windy", SPEEDUNIT, device_class=SensorDeviceClass.WIND_SPEED,
         state_class=SensorStateClass.MEASUREMENT),
@@ -392,12 +382,6 @@ def wind_direction_to_friendly_name(argument):
     return ""
 
 
-def calculate_feels_like_temp(heatIndex, windChill, temp):
-    # Return Feels Like temperature based on
-    # https://www.wunderground.com/maps/temperature/feels-like
-    return windChill if windChill < temp else heatIndex
-
-
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_MONITORED_CONDITIONS):
         vol.All(cv.ensure_list, vol.Length(min=1), [vol.In(SENSOR_TYPES)])
@@ -440,9 +424,8 @@ class WUndergroundSensor(SensorEntity):
         self.rest.request_feature(SENSOR_TYPES[condition].feature)
         # This is only the suggested entity id, it might get changed by
         # the entity registry later.
-        self._unique_id = f'{unique_id_base}.{condition}'
-        self.entity_id = sensor.ENTITY_ID_FORMAT.format(
-            f'wupws.{self.unique_id}')
+        self.entity_id = sensor.ENTITY_ID_FORMAT.format('wupws_' + condition)
+        self._unique_id = "{},{}".format(unique_id_base, condition)
         self._device_class = self._cfg_expand("device_class")
         self._state_class = self._cfg_expand("state_class")
 
