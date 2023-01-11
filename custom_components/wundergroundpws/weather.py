@@ -43,6 +43,7 @@ from homeassistant.components.weather import (
     ATTR_FORECAST_TIME,
     ATTR_FORECAST_WIND_BEARING,
     ATTR_FORECAST_WIND_SPEED,
+    ENTITY_ID_FORMAT,
     WeatherEntity,
     Forecast,
 )
@@ -92,6 +93,8 @@ class WUWeather(WeatherEntity):
             name=NAME,
         )
         self._rest = wunderground_data
+        self.entity_id = ENTITY_ID_FORMAT.format(
+            f'wupws.{self.unique_id}')
 
     @property
     def native_temperature(self) -> float:
