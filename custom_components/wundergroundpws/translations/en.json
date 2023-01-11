@@ -1,7 +1,6 @@
 {
   "dewpt": "Dewpoint",
   "elev": "Elevation",
-  "feelsLike": "Feels Like",
   "heatIndex": "Heat index",
   "humidity": "Relative Humidity",
   "neighborhood": "Neighborhood",
