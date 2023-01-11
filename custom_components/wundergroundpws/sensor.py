@@ -234,6 +234,16 @@ SENSOR_TYPES = {
     'temp': WUCurrentConditionsSensorConfig(
         'Temperature', 'temp', "mdi:thermometer", TEMPUNIT,
         device_class=SensorDeviceClass.TEMPERATURE, state_class=SensorStateClass.MEASUREMENT),
+    'feelsLike': WUSensorConfig(
+        'Feels Like', 'conditions',
+        value=lambda wu: calculate_feels_like_temp(
+            float(wu.data['observations'][0]['heatIndex'] or 0),
+            float(wu.data['observations'][0]['windChill'] or 0),
+            float(wu.data['observations'][0]['temp'] or 0)),
+        unit_of_measurement=TEMPUNIT,
+        icon="mdi:thermometer",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT),
     'windGust': WUCurrentConditionsSensorConfig(
         'Wind Gust', 'windGust', "mdi:weather-windy", SPEEDUNIT, device_class=SensorDeviceClass.WIND_SPEED,
         state_class=SensorStateClass.MEASUREMENT),
@@ -380,6 +390,12 @@ def wind_direction_to_friendly_name(argument):
     if 326.25 <= argument < 348.75:
         return "NNW"
     return ""
+
+
+def calculate_feels_like_temp(heatIndex, windChill, temp):
+    # Return Feels Like temperature based on
+    # https://www.wunderground.com/maps/temperature/feels-like
+    return windChill if windChill < temp else heatIndex
 
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
