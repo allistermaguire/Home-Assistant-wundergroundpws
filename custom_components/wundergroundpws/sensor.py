@@ -90,7 +90,11 @@ class WUCurrentConditionsSensorConfig(WUSensorConfig):
         super().__init__(
             friendly_name,
             "conditions",
-            value=lambda wu: wu.data['observations'][0][wu.unit_system][field],
+            value=lambda wu: wu.data['observations'][0][wu.unit_system][field]
+            if (field != 'feelsLike') else calculate_feels_like_temp(
+                float(wu.data['observations'][0][wu.unit_system]['heatIndex'] or 0),
+                float(wu.data['observations'][0][wu.unit_system]['windChill'] or 0),
+                float(wu.data['observations'][0][wu.unit_system]['temp'] or 0)),
             icon=icon,
             unit_of_measurement=lambda wu: wu.units_of_measurement[unit_of_measurement],
             device_state_attributes={
@@ -238,6 +242,9 @@ SENSOR_TYPES = {
     'temp': WUCurrentConditionsSensorConfig(
         'Temperature', 'temp', "mdi:thermometer", TEMPUNIT,
         device_class=SensorDeviceClass.TEMPERATURE, state_class=SensorStateClass.MEASUREMENT),
+    'feelsLike': WUCurrentConditionsSensorConfig(
+        'Feels Like', 'feelsLike', "mdi:thermometer", TEMPUNIT,
+        device_class=SensorDeviceClass.TEMPERATURE, state_class=SensorStateClass.MEASUREMENT),
     'windGust': WUCurrentConditionsSensorConfig(
         'Wind Gust', 'windGust', "mdi:weather-windy", SPEEDUNIT, device_class=SensorDeviceClass.WIND_SPEED,
         state_class=SensorStateClass.MEASUREMENT),
@@ -384,6 +391,12 @@ def wind_direction_to_friendly_name(argument):
     if 326.25 <= argument < 348.75:
         return "NNW"
     return ""
+
+
+def calculate_feels_like_temp(heatIndex, windChill, temp):
+    # Return Feels Like temperature based on
+    # https://www.wunderground.com/maps/temperature/feels-like
+    return windChill if windChill < temp else heatIndex
 
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
